@@ -1,4 +1,5 @@
 import logging
+import logging.config
 import time
 import json
 from uuid import uuid4
@@ -9,6 +10,14 @@ from starlette.types import Message
 # For typing
 from typing import Callable
 from fastapi import FastAPI, Request, Response
+
+
+def create_logger(name: str) -> logging.Logger:
+    config_path = "config/logging.conf"
+    
+    logging.config.fileConfig(config_path)
+    
+    return logging.getLogger(name)
 
 
 class MiddleLogger(BaseHTTPMiddleware):
@@ -22,7 +31,7 @@ class MiddleLogger(BaseHTTPMiddleware):
 
         logging_info = {"X-API-REQUEST-ID": request_id}
 
-        await self.set_body(request)
+        await self._set_body(request)
         response, response_info = await self._log_response(call_next, request, request_id)
 
         request_info = await self._log_request(request)
@@ -35,7 +44,7 @@ class MiddleLogger(BaseHTTPMiddleware):
         return response
     
 
-    async def set_body(self, request: Request):
+    async def _set_body(self, request: Request):
         receive_ = await request._receive()
 
         async def recieve() -> Message:
@@ -59,7 +68,7 @@ class MiddleLogger(BaseHTTPMiddleware):
         }
 
         response_body = [section async for section in response.__dict__["body_iterator"]]
-        response.__setattr__("body_interator", AsyncIteratorWrapper(response_body))
+        response.__setattr__("body_iterator", AsyncIteratorWrapper(response_body))
 
         try:
             response_body = json.loads(response_body[0].decode())

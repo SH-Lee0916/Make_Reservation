@@ -1,12 +1,9 @@
-import logging
-
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 
 # Middle wares
 from fastapi.middleware.cors import CORSMiddleware  # For CORS
-from middlewares.logger import MiddleLogger # For logging
+from middlewares.logger import MiddleLogger, create_logger # For logging
 
 def create_app() -> FastAPI:
     """ Create FastAPI app
@@ -16,11 +13,11 @@ def create_app() -> FastAPI:
 
     app = FastAPI()
     
-    # logging middleware
+    # Logging middleware
     app.add_middleware(MiddleLogger,
-                       logger = logging.getLogger(__name__))
+                       logger = create_logger("fileInfo"))
     
-    # CORS middleware
+    # CORS middlewarea
     origins = [ "http://localhost:3000" ]
     app.add_middleware(CORSMiddleware,
                        allow_origins = origins,
@@ -28,14 +25,10 @@ def create_app() -> FastAPI:
                        allow_methods = ["*"],
                        allow_headers = ["*"])
 
-    @app.get("/")
-    def test_page():
-        return JSONResponse({"test_page": "Hello FastAPI"})
-
     return app
 
 app = create_app()
 
 if __name__ == "__main__":
 
-    uvicorn.run("main:app", host = "0.0.0.0", port = 8000, reload = True)
+    uvicorn.run("main:app", host = "0.0.0.0", port = 8080, reload = True)

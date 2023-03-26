@@ -4,6 +4,7 @@ sys.path.append("../app")
 
 from fastapi import Response, APIRouter
 from fastapi.testclient import TestClient
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from app.main import app
@@ -21,12 +22,12 @@ router = APIRouter()
 
 @router.get("/logging/param", response_model = test_model_out)
 async def param_test(name: str = None, number: int = None) -> Response:
-    return test_model_out(test_number = number)
+    return JSONResponse(test_model_out(test_number = number).dict())
 
 
 @router.post("/logging/json", response_model = test_model_out)
-async def model_test(test_model: test_model_in) -> Response:
-    return test_model
+async def model_test(test_model: test_model_in) -> test_model_out:
+    return JSONResponse(test_model_out(test_number = test_model.dict()["test_number"]).dict())
 
 
 #############################################
@@ -44,7 +45,6 @@ def test_param_logging():
 
     assert response.status_code == 200
     assert response.json() == {
-        "test_name": test_name,
         "test_number": test_number
     }
 
@@ -57,7 +57,6 @@ def test_model_logging():
 
     assert response.status_code == 200
     assert response.json() == {
-        "test_name": test_name,
         "test_number": test_number
     }
 
