@@ -130,3 +130,6 @@ dmypy.json
 
 # .gitmessage
 .gitmessage.txt
+
+# Test files
+*__test__*
