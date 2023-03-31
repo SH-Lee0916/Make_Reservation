@@ -21,8 +21,9 @@ def create_logger(name: str) -> logging.Logger:
 
 
 class MiddleLogger(BaseHTTPMiddleware):
-    def __init__(self, app: FastAPI, logger: logging.Logger) -> None:
-        self._logger = logger
+    def __init__(self, app: FastAPI) -> None:
+        self._info_logger = create_logger("fileInfo")
+        self._debug_logger = create_logger("fileDebug")
         super().__init__(app)
 
     
@@ -39,7 +40,9 @@ class MiddleLogger(BaseHTTPMiddleware):
         logging_info["request"] = request_info
         logging_info["response"] = response_info
 
-        self._logger.info(logging_info)
+        self._info_logger.info(logging_info)
+        if response_info["status_code"] >= 400:
+            self._debug_logger.debug(logging_info)
 
         return response
     
@@ -88,7 +91,7 @@ class MiddleLogger(BaseHTTPMiddleware):
             return response
 
         except Exception as e:
-            self._logger.exception(
+            self._info_logger.exception(
                 {
                     "path": request.url.path,
                     "method": request.method,
