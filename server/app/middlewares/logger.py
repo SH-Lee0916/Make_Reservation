@@ -24,6 +24,7 @@ class MiddleLogger(BaseHTTPMiddleware):
     def __init__(self, app: FastAPI) -> None:
         self._info_logger = create_logger("fileInfo")
         self._debug_logger = create_logger("fileDebug")
+        self._error_logger = create_logger("fileError")
         super().__init__(app)
 
     
@@ -91,7 +92,7 @@ class MiddleLogger(BaseHTTPMiddleware):
             return response
 
         except Exception as e:
-            self._info_logger.exception(
+            self._error_logger.exception(
                 {
                     "path": request.url.path,
                     "method": request.method,
